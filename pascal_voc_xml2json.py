@@ -92,8 +92,21 @@ def parseXmlFiles(xml_path):
         xml_file = os.path.join(xml_path, f)
         print(xml_file)
 
+
         tree = ET.parse(xml_file)
         root = tree.getroot()
+
+        for root_idx in range(len(root._children)):
+            print root._children[root_idx]
+            if root._children[root_idx].tag == 'size':
+                width = root._children[root_idx]._children[0].text
+                height = root._children[root_idx]._children[1].text
+                depth = root._children[root_idx]._children[2].text
+                size['width'] = width
+                size['height'] = height
+                size['depth'] = depth
+
+
         if root.tag != 'annotation':
             raise Exception('pascal voc xml root element should be annotation, rather than {}'.format(root.tag))
 
@@ -105,16 +118,25 @@ def parseXmlFiles(xml_path):
             
             if elem.tag == 'folder':
                 continue
-            
+
+            print('current_image_id', current_image_id)
+            print(file_name)
+            print(size['width'])
+            print('elem', elem.tag)
+
             if elem.tag == 'filename':
                 file_name = elem.text
                 if file_name in category_set:
                     raise Exception('file_name duplicated')
                 
-            #add img item only after parse <size> tag
+                #add img item only after parse <size> tag
+
+
             elif current_image_id is None and file_name is not None and size['width'] is not None:
+            # elif current_image_id is None and file_name is not None:
                 if file_name not in image_set:
                     current_image_id = addImgItem(file_name, size)
+                    print('current_image_id: ', current_image_id)
                     print('add image with {} and {}'.format(file_name, size))
                 else:
                     raise Exception('duplicated image: {}'.format(file_name)) 
@@ -134,25 +156,25 @@ def parseXmlFiles(xml_path):
                         current_category_id = category_set[object_name]
 
                 elif current_parent == 'size':
-                    if size[subelem.tag] is not None:
-                        raise Exception('xml structure broken at size tag.')
+                    # if size[subelem.tag] is not None:
+                    #     raise Exception('xml structure broken at size tag.')
                     size[subelem.tag] = int(subelem.text)
 
-                #option is <xmin>, <ymin>, <xmax>, <ymax>, when subelem is <bndbox>
+                # option is <xmin>, <ymin>, <xmax>, <ymax>, when subelem is <bndbox>
                 for option in subelem:
                     if current_sub == 'bndbox':
                         if bndbox[option.tag] is not None:
                             raise Exception('xml structure corrupted at bndbox tag.')
                         bndbox[option.tag] = int(option.text)
 
-                #only after parse the <object> tag
+                # only after parse the <object> tag
                 if bndbox['xmin'] is not None:
                     if object_name is None:
-                        raise Exception('xml structure broken at bndbox tag')
+                        raise Exception('xml structure broken at bndbox tag. name')
                     if current_image_id is None:
-                        raise Exception('xml structure broken at bndbox tag')
+                        raise Exception('xml structure broken at bndbox tag. img_id')
                     if current_category_id is None:
-                        raise Exception('xml structure broken at bndbox tag')
+                        raise Exception('xml structure broken at bndbox tag. cat_id')
                     bbox = []
                     #x
                     bbox.append(bndbox['xmin'])
@@ -165,8 +187,11 @@ def parseXmlFiles(xml_path):
                     print('add annotation with {},{},{},{}'.format(object_name, current_image_id, current_category_id, bbox))
                     addAnnoItem(object_name, current_image_id, current_category_id, bbox )
 
+
 if __name__ == '__main__':
-    xml_path = 'Annotations'
-    json_file = 'instances.json'
+    # xml_path = '/media/gcx/9c3f749d-2350-407f-9652-43a1c3df129f/datasets/VOC/VOCdevkit/VOC2012/Annotations/'
+    xml_path = '/home/gcx/datasets/boat_voc_format/annotations/'
+    # xml_path = 'Annotations'
+    json_file = 'instances_boat.json'
     parseXmlFiles(xml_path)
     json.dump(coco, open(json_file, 'w'))
