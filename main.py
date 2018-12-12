@@ -9,7 +9,7 @@ import argparse
 import logging
 import sys
 import os
-# os.chdir('/home/gcx/repositories/vod-converter2/vod-converter/')
+sys.path.append('/home/gcx/repositories/vod-converter2/vod-converter/vod_converter/')
 
 import converter
 import kitti

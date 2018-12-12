@@ -63,8 +63,11 @@ class KITTIIngestor(Ingestor):
 
     def find_image_ext(self, root, image_id):
         for image_ext in ['png', 'jpg']:
+            print('root ', root)
+            print('image_id', image_id)
             if os.path.exists("%s/training/image_2/%s.%s" % (root, image_id, image_ext)):
                 return image_ext
+
         raise Exception("could not find jpg or png for %s at %s/training/image_2" % (image_id, root))
 
     def _get_image_ids(self, root):
@@ -74,6 +77,7 @@ class KITTIIngestor(Ingestor):
 
     def _get_image_detection(self, root, image_id, image_ext='png'):
         detections_fpath = "%s/training/label_2/%s.txt" % (root, image_id)
+
         detections = self._get_detections(detections_fpath)
         detections = [det for det in detections if det['left'] < det['right'] and det['top'] < det['bottom']]
         image_path = "%s/training/image_2/%s.%s" % (root, image_id, image_ext)
@@ -92,6 +96,7 @@ class KITTIIngestor(Ingestor):
     def _get_detections(self, detections_fpath):
         detections = []
         with open(detections_fpath) as f:
+
             f_csv = csv.reader(f, delimiter=' ')
             for row in f_csv:
                 x1, y1, x2, y2 = map(float, row[4:8])

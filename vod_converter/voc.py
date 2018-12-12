@@ -118,12 +118,14 @@ class VOCEgestor(Egestor):
 
         for image_detection in image_detections:
             image = image_detection['image']
+            print('image', image)
             image_id = image['id']
             src_extension = image['path'].split('.')[-1]
-            shutil.copyfile(image['path'], "%s/%d.%s" % (images_path, image_id, src_extension))
+            shutil.copyfile(image['path'], "%s/%d.%s" % (images_path, int(image_id[5:]), src_extension))
 
             with open("%s/trainval.txt" % image_sets_path, 'a') as out_image_index_file:
-                out_image_index_file.write('%d\n' % image_id)
+                # out_image_index_file.write('%d\n' % image_id)
+                out_image_index_file.write('%d\n' % int(image_id[5:]))
 
             if image['segmented_path'] is not None:
                 if not segmentations_dir_created:
@@ -132,14 +134,14 @@ class VOCEgestor(Egestor):
                 shutil.copyfile(image['segmented_path'], "%s/%d.png" % (segmentations_path, image_id))
 
             xml_root = ET.Element('annotation')
-            add_text_node(xml_root, 'filename', "%d.%s" % (image_id, src_extension))
+            add_text_node(xml_root, 'filename', "%d.%s" % (int(image_id[5:]), src_extension))
             add_text_node(xml_root, 'folder', 'VOC2012')
             add_text_node(xml_root, 'segmented', int(segmentations_dir_created))
 
             add_sub_node(xml_root, 'size', {
-                'depth': 3,
-                'width': image['width'],
-                'height': image['height']
+                'depth': str(3),
+                'width': str(image['width']),
+                'height': str(image['height'])
             })
             add_sub_node(xml_root, 'source', {
                 'annotation': 'Dummy',
@@ -149,20 +151,21 @@ class VOCEgestor(Egestor):
 
             for detection in image_detection['detections']:
                 x_object = add_sub_node(xml_root, 'object', {
-                    'name': detection['label'],
+                    # 'name': detection['label'],
+                    'name': 'boat',
                     'difficult': 0,
                     'occluded': 0,
                     'truncated': 0,
                     'pose': 'Unspecified'
                 })
                 add_sub_node(x_object, 'bndbox', {
-                    'xmin': detection['left'] + 1,
-                    'xmax': detection['right'] + 1,
-                    'ymin': detection['top'] + 1,
-                    'ymax': detection['bottom'] + 1
+                    'xmin': str(detection['left'] + 1),
+                    'xmax': str(detection['right'] + 1),
+                    'ymin': str(detection['top'] + 1),
+                    'ymax': str(detection['bottom'] + 1)
                 })
 
-            ET.ElementTree(xml_root).write("%s/%d.xml" % (annotations_path, image_id))
+            ET.ElementTree(xml_root).write("%s/%d.xml" % (annotations_path, int(image_id[5:])))
 
 
 def add_sub_node(node, name, kvs):

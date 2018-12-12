@@ -84,6 +84,7 @@ class Ingestor:
         :param path: '/path/to/data/'
         :return: an array of dicts conforming to `IMAGE_DETECTION_SCHEMA`
         """
+        print('got into ingest')
         pass
 
 
@@ -125,10 +126,12 @@ def convert(from_path, ingestor, to_path, egestor, select_only_known_labels, fil
     :param egestor: `Egestor` to write out data
     :return: (success, message)
     """
+    print('path to ingest: ',from_path)
     from_valid, from_msg = ingestor.validate(from_path)
 
     if not from_valid:
         return from_valid, from_msg
+
 
     image_detections = ingestor.ingest(from_path)
     validate_image_detections(image_detections)
@@ -159,6 +162,7 @@ def convert_labels(image_detections, expected_labels,
                    select_only_known_labels, filter_images_without_labels):
     convert_dict = {}
     for label, aliases in expected_labels.items():
+        print('label: ', label)
         convert_dict[label.lower()] = label
         for alias in aliases:
             convert_dict[alias.lower()] = label
